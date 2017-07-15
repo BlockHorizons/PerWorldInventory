@@ -46,12 +46,11 @@ class EventListener implements Listener {
 			}
 		}
 
-		if(!in_array($event->getTarget()->getName(), $this->getPlugin()->getConfig()->getNested("Bundled-Worlds." . $event->getOrigin()->getName()))) {
-			if(!in_array($event->getOrigin()->getName(), $this->getPlugin()->getConfig()->getNested("Bundled-Worlds." . $event->getTarget()->getName()))) {
-				return;
+		if(!in_array($event->getTarget()->getName(), $this->getPlugin()->getConfig()->getNested("Bundled-Worlds." . $event->getOrigin()->getName(), []))) {
+			if(!in_array($event->getOrigin()->getName(), $this->getPlugin()->getConfig()->getNested("Bundled-Worlds." . $event->getTarget()->getName(), []))) {
+				$player->getInventory()->setContents($this->getPlugin()->fetchInventory($player, $event->getTarget()));
 			}
 		}
-		$player->getInventory()->setContents($this->getPlugin()->fetchInventory($player, $event->getTarget()));
 	}
 
 	/**
