@@ -46,6 +46,9 @@ class EventListener implements Listener {
 			}
 		}
 
+		if($player->hasPermission("per-world-inventory.bypass")) {
+			return;
+		}
 		if(!in_array($event->getTarget()->getName(), $this->getPlugin()->getConfig()->getNested("Bundled-Worlds." . $event->getOrigin()->getName(), []))) {
 			if(!in_array($event->getOrigin()->getName(), $this->getPlugin()->getConfig()->getNested("Bundled-Worlds." . $event->getTarget()->getName(), []))) {
 				$player->getInventory()->setContents($this->getPlugin()->fetchInventory($player, $event->getTarget()));
