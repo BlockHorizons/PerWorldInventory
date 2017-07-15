@@ -1,2 +1,2 @@
 # PerWorldInventory
-A full features per world inventory plugin
+A full featured per world inventory plugin

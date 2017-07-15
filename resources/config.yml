@@ -1,0 +1,8 @@
+---
+# Configuration file for PerWorldInventory by BlockHorizons
+
+# Worlds in which inventories should be bundled. This means, that MyWorld will have the same inventory as MySecondWorld.
+Bundled-Worlds:
+  MyWorld:
+    - MySecondWorld
+...
