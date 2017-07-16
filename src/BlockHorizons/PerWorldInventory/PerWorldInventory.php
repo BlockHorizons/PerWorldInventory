@@ -59,6 +59,7 @@ class PerWorldInventory extends PluginBase {
 		} else {
 			$previousData = yaml_parse_file($file);
 			$previousData[$level->getName()] = $compressedData;
+			yaml_emit_file($file, $previousData);
 		}
 		return $processedData;
 	}
@@ -98,18 +99,14 @@ class PerWorldInventory extends PluginBase {
 	public function getFromFormattedData(Player $player, Level $level): array {
 		$file = $this->getDataFolder() . "inventories/" . $player->getLowerCaseName() . ".yml";
 		if(!file_exists($file)) {
-			return [
-				$level->getName() => ""
-			];
+			return [""];
 		}
 		$data = yaml_parse_file($file);
-		if(!isset($data[$level->getname()])) {
-			return [
-				$level->getName() => ""
-			];
+		if(!isset($data[$level->getName()])) {
+			return [""];
 		}
 		return [
-			$level->getName() => $data[$level->getName()]
+			$data[$level->getName()]
 		];
 	}
 
@@ -132,6 +129,6 @@ class PerWorldInventory extends PluginBase {
 	 */
 	public function fetchInventory(Player $player, Level $level): array {
 		$data = $this->getFromFormattedData($player, $level);
-		return $this->decompressInventoryContents($data[$level->getName()]);
+		return $this->decompressInventoryContents($data[0]);
 	}
 }
