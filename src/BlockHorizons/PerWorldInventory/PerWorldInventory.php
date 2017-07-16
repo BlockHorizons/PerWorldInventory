@@ -12,14 +12,12 @@ use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\ListTag;
 use pocketmine\Player;
 use pocketmine\plugin\PluginBase;
-use spoondetector\SpoonDetector;
 
 class PerWorldInventory extends PluginBase {
 
 	public function onEnable() {
 		if(!is_dir($this->getDataFolder())) {
 			mkdir($this->getDataFolder());
-			SpoonDetector::printSpoon($this);
 			$this->saveDefaultConfig();
 			mkdir($this->getDataFolder() . "inventories");
 		}
