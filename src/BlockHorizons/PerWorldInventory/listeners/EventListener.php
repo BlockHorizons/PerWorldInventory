@@ -65,11 +65,15 @@ class EventListener implements Listener {
 		if($event->getPlayer()->isCreative()) {
 			return;
 		}
+		$valid = false;
 		foreach($event->getPlayer()->getInventory()->getContents() as $content) {
 			if($content->getId() !== Item::AIR) {
-				$this->getPlugin()->storeInventory($event->getPlayer(), $event->getPlayer()->getLevel());
-				return;
+				$valid = true;
+				break;
 			}
+		}
+		if($valid) {
+			$this->getPlugin()->storeInventory($event->getPlayer(), $event->getPlayer()->getLevel());
 		}
 	}
 }
