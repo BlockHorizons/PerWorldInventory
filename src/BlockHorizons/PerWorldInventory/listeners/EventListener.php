@@ -50,6 +50,7 @@ class EventListener implements Listener {
 			return;
 		}
 		$this->getPlugin()->storeInventory($player, $event->getOrigin());
+		$player->getInventory()->clearAll();
 		$player->getInventory()->setContents($this->getPlugin()->fetchInventory($player, $event->getTarget()));
 	}
 
