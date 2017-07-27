@@ -39,21 +39,18 @@ class EventListener implements Listener {
 		if($player->isCreative()) {
 			return;
 		}
-		foreach($player->getInventory()->getContents() as $content) {
-			if($content->getId() !== Item::AIR) {
-				$this->getPlugin()->storeInventory($player, $event->getOrigin());
-				break;
-			}
+
+		if(in_array($event->getTarget()->getName(), $this->getPlugin()->getConfig()->getNested("Bundled-Worlds." . $event->getOrigin()->getName(), []))) {
+			return;
+		} elseif(in_array($event->getOrigin()->getName(), $this->getPlugin()->getConfig()->getNested("Bundled-Worlds." . $event->getTarget()->getName(), []))) {
+			return;
 		}
 
 		if($player->hasPermission("per-world-inventory.bypass")) {
 			return;
 		}
-		if(!in_array($event->getTarget()->getName(), $this->getPlugin()->getConfig()->getNested("Bundled-Worlds." . $event->getOrigin()->getName(), []))) {
-			if(!in_array($event->getOrigin()->getName(), $this->getPlugin()->getConfig()->getNested("Bundled-Worlds." . $event->getTarget()->getName(), []))) {
-				$player->getInventory()->setContents($this->getPlugin()->fetchInventory($player, $event->getTarget()));
-			}
-		}
+		$this->getPlugin()->storeInventory($player, $event->getOrigin());
+		$player->getInventory()->setContents($this->getPlugin()->fetchInventory($player, $event->getTarget()));
 	}
 
 	/**
