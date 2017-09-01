@@ -32,7 +32,7 @@ class EventListener implements Listener {
 	 *
 	 * @priority HIGHEST
 	 */
-	public function onLevelChange(EntityLevelChangeEvent $event) {
+	public function onLevelChange(EntityLevelChangeEvent $event): void {
 		$player = $event->getEntity();
 		if(!$player instanceof Player) {
 			return;
@@ -61,7 +61,7 @@ class EventListener implements Listener {
 	 *
 	 * @priority MONITOR
 	 */
-	public function onQuit(PlayerQuitEvent $event) {
+	public function onQuit(PlayerQuitEvent $event): void {
 		if($event->getPlayer()->isCreative()) {
 			return;
 		}
@@ -82,7 +82,7 @@ class EventListener implements Listener {
 	 *
 	 * @priority HIGH
 	 */
-	public function onJoin(PlayerJoinEvent $event) {
+	public function onJoin(PlayerJoinEvent $event): void {
 		$player = $event->getPlayer();
 		if($player->isCreative()) {
 			return;

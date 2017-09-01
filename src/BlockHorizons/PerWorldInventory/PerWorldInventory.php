@@ -15,7 +15,7 @@ use pocketmine\plugin\PluginBase;
 
 class PerWorldInventory extends PluginBase {
 
-	public function onEnable() {
+	public function onEnable(): void {
 		if(!is_dir($this->getDataFolder())) {
 			mkdir($this->getDataFolder());
 			$this->saveDefaultConfig();
@@ -34,6 +34,7 @@ class PerWorldInventory extends PluginBase {
 		foreach($items as &$item) {
 			$item = $item->nbtSerialize(-1, "Item");
 		}
+		unset($item);
 		$nbt = new NBT(NBT::BIG_ENDIAN);
 		$compressedContents = new CompoundTag("Items", [
 			new ListTag("ItemList", $items)
