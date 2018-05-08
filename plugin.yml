@@ -2,9 +2,8 @@
 name: PerWorldInventory
 version: 1.0.0
 api:
-- 3.0.0-ALPHA5
-- 3.0.0-ALPHA6
-- 3.0.0-ALPHA7
+- 3.0.0-ALPHA11
+- 3.0.0-ALPHA12
 main: BlockHorizons\PerWorldInventory\PerWorldInventory
 author: BlockHorizons
 

@@ -7,13 +7,16 @@ namespace BlockHorizons\PerWorldInventory\listeners;
 use BlockHorizons\PerWorldInventory\PerWorldInventory;
 use pocketmine\event\entity\EntityLevelChangeEvent;
 use pocketmine\event\Listener;
+use pocketmine\event\inventory\InventoryTransactionEvent;
 use pocketmine\event\player\PlayerJoinEvent;
+use pocketmine\event\player\PlayerLoginEvent;
 use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\item\Item;
 use pocketmine\Player;
 
 class EventListener implements Listener {
 
+	/** @var PerWorldInventory */
 	private $plugin;
 
 	public function __construct(PerWorldInventory $plugin) {
@@ -32,28 +35,29 @@ class EventListener implements Listener {
 	 *
 	 * @priority HIGHEST
 	 */
-	public function onLevelChange(EntityLevelChangeEvent $event) {
+	public function onLevelChange(EntityLevelChangeEvent $event) : void {
 		$player = $event->getEntity();
-		if(!$player instanceof Player) {
-			return;
-		}
-		if($player->isCreative()) {
+		if(!($player instanceof Player) or $player->isCreative()) {
 			return;
 		}
 
-		$this->getPlugin()->storeInventory($player, $event->getOrigin());
+		$origin = $event->getOrigin();
+		$target = $event->getTarget();
 
-		if(in_array($event->getTarget()->getName(), $this->getPlugin()->getConfig()->getNested("Bundled-Worlds." . $event->getOrigin()->getName(), []))) {
-			return;
-		} elseif(in_array($event->getOrigin()->getName(), $this->getPlugin()->getConfig()->getNested("Bundled-Worlds." . $event->getTarget()->getName(), []))) {
+		$this->getPlugin()->storeInventory($player, $origin);
+		if($player->hasPermission("per-world-inventory.bypass")){
 			return;
 		}
 
-		if($player->hasPermission("per-world-inventory.bypass")) {
+		$config = $this->getPlugin()->getConfig();
+		$origin_name = $origin->getFolderName();
+		$target_name = $target->getFolderName();
+
+		if(in_array($target_name, $config->getNested("Bundled-Worlds." . $origin_name, [])) or in_array($origin_name, $config->getNested("Bundled-Worlds." . $target_name, []))) {
 			return;
 		}
-		$player->getInventory()->clearAll();
-		$player->getInventory()->setContents($this->getPlugin()->fetchInventory($player, $event->getTarget()));
+
+		$player->getInventory()->setContents($this->getPlugin()->getInventory($player, $target));
 	}
 
 	/**
@@ -61,36 +65,30 @@ class EventListener implements Listener {
 	 *
 	 * @priority MONITOR
 	 */
-	public function onQuit(PlayerQuitEvent $event) {
-		if($event->getPlayer()->isCreative()) {
-			return;
-		}
-		$valid = false;
-		foreach($event->getPlayer()->getInventory()->getContents() as $content) {
-			if($content->getId() !== Item::AIR) {
-				$valid = true;
-				break;
-			}
-		}
-		if($valid) {
-			$this->getPlugin()->storeInventory($event->getPlayer(), $event->getPlayer()->getLevel());
-		}
+	public function onQuit(PlayerQuitEvent $event) : void {
+		$player = $event->getPlayer();
+		$this->getPlugin()->save($player, true);
 	}
 
 	/**
-	 * @param PlayerJoinEvent $event
+	 * @param PlayerLoginEvent $event
 	 *
-	 * @priority HIGH
+	 * @priority MONITOR
+	 * @ignoreCancelled true
 	 */
-	public function onJoin(PlayerJoinEvent $event) {
+	public function onPlayerLogin(PlayerLoginEvent $event) : void {
 		$player = $event->getPlayer();
-		if($player->isCreative()) {
+		if($player->isCreative() or $player->hasPermission("per-world-inventory.bypass")) {
 			return;
 		}
-		if($player->hasPermission("per-world-inventory.bypass")) {
-			return;
+
+		$this->getPlugin()->load($player);
+	}
+
+	public function onInventoryTransaction(InventoryTransactionEvent $event) : void {
+		$player = $event->getTransaction()->getSource();
+		if($this->getPlugin()->isLoading($player)){
+			$event->setCancelled();
 		}
-		$player->getInventory()->clearAll();
-		$player->getInventory()->setContents($this->getPlugin()->fetchInventory($player, $player->getLevel()));
 	}
 }

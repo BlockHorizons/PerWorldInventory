@@ -5,130 +5,132 @@ declare(strict_types = 1);
 namespace BlockHorizons\PerWorldInventory;
 
 use BlockHorizons\PerWorldInventory\listeners\EventListener;
-use pocketmine\item\Item;
+use BlockHorizons\PerWorldInventory\tasks\LoadInventoryTask;
+
 use pocketmine\level\Level;
-use pocketmine\nbt\NBT;
+use pocketmine\nbt\BigEndianNBTStream;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\ListTag;
 use pocketmine\Player;
 use pocketmine\plugin\PluginBase;
+use pocketmine\scheduler\FileWriteTask;
 
 class PerWorldInventory extends PluginBase {
 
-	public function onEnable() {
+	/** @var string */
+	private $base_directory;
+
+	/** @var Item[][] */
+	private $loaded_inventories = [];
+
+	/** @var bool[] */
+	private $loading = [];
+
+	public function onEnable() : void {
 		if(!is_dir($this->getDataFolder())) {
 			mkdir($this->getDataFolder());
 			$this->saveDefaultConfig();
 			mkdir($this->getDataFolder() . "inventories");
 		}
+
+		$this->base_directory = $this->getDataFolder() . "inventories/";
 		$this->getServer()->getPluginManager()->registerEvents(new EventListener($this), $this);
 	}
 
-	/**
-	 * @param Player $player
-	 *
-	 * @return string
-	 */
-	public function compressInventoryContents(Player $player): string {
-		$items = $player->getInventory()->getContents();
-		foreach($items as &$item) {
-			$item = $item->nbtSerialize(-1, "Item");
-		}
-		$nbt = new NBT(NBT::BIG_ENDIAN);
-		$compressedContents = new CompoundTag("Items", [
-			new ListTag("ItemList", $items)
-		]);
-		$nbt->setData($compressedContents);
-		return base64_encode($nbt->writeCompressed(ZLIB_ENCODING_DEFLATE));
+	public function onDisable() : void {
+		$this->saveAllInventories();
 	}
 
-	/**
-	 * @param Player $player
-	 * @param Level  $level
-	 * @param string $compressedData
-	 *
-	 * @return string[]
-	 */
-	public function putDataFormatted(Player $player, Level $level, string $compressedData): array {
-		$file = $this->getDataFolder() . "inventories/" . $player->getLowerCaseName() . ".yml";
-		$processedData = [
-			$level->getName() => $compressedData
-		];
-		if(!file_exists($file)) {
-			yaml_emit_file($file, $processedData);
-		} else {
-			$previousData = yaml_parse_file($file);
-			$previousData[$level->getName()] = $compressedData;
-			yaml_emit_file($file, $previousData);
-		}
-		return $processedData;
+	public function getInventory(Player $player, Level $level) : array {
+		return $this->loaded_inventories[$player->getLowerCaseName()][$level->getFolderName()] ?? [];
 	}
 
-	/**
-	 * @param string $compressedData
-	 *
-	 * @return Item[]
-	 */
-	public function decompressInventoryContents(string $compressedData): array {
-		if(empty($compressedData)) {
-			return [];
-		}
-		$compressedContents = base64_decode($compressedData);
-		$nbt = new NBT(NBT::BIG_ENDIAN);
-		$nbt->readCompressed($compressedContents);
-		$nbt = $nbt->getData();
+	public function storeInventory(Player $player, Level $level) : void {
+		$contents = $player->getInventory()->getContents();
+		$armorInventory = $player->getArmorInventory();
 
-		/** @var ListTag $items */
-		$items = $nbt->ItemList ?? [];
-		$contents = [];
-		if(!empty($items)) {
-			$items = $items->getValue();
-			foreach($items as $slot => $compoundTag) {
-				$contents[$slot] = Item::nbtDeserialize($compoundTag);
+		for($slot = 100; $slot < 104; ++$slot) {
+			$item = $armorInventory->getItem($slot - 100);
+			if(!$item->isNull()) {
+				$contents[$slot] = $item;
 			}
 		}
-		return $contents;
-	}
 
-	/**
-	 * @param Player $player
-	 * @param Level  $level
-	 *
-	 * @return string[]
-	 */
-	public function getFromFormattedData(Player $player, Level $level): array {
-		$file = $this->getDataFolder() . "inventories/" . $player->getLowerCaseName() . ".yml";
-		if(!file_exists($file)) {
-			return [""];
+		if(empty($contents)){
+			unset($this->loaded_inventories[$player->getLowerCaseName()][$level->getFolderName()]);
+		}else{
+			$this->loaded_inventories[$player->getLowerCaseName()][$level->getFolderName()] = $contents;
 		}
-		$data = yaml_parse_file($file);
-		if(!isset($data[$level->getName()])) {
-			return [""];
+	}
+
+	public function load(Player $player) : void {
+		$filepath = $this->base_directory . $player->getLowerCaseName() . ".dat";
+		if(file_exists($filepath)) {
+			$this->getServer()->getScheduler()->scheduleAsyncTask(new LoadInventoryTask($player, $filepath));
+			$this->loading[$player->getLowerCaseName()] = true;
 		}
-		return [
-			$data[$level->getName()]
-		];
 	}
 
-	/**
-	 * @param Player $player
-	 * @param Level  $level
-	 *
-	 * @return string[]
-	 */
-	public function storeInventory(Player $player, Level $level): array {
-		$compressedData = $this->compressInventoryContents($player);
-		return $this->putDataFormatted($player, $level, $compressedData);
+	public function isLoading(Player $player) : bool {
+		return isset($this->loading[$player->getLowerCaseName()]);
 	}
 
-	/**
-	 * @param Player $player
-	 * @param Level  $level
-	 *
-	 * @return Item[]
-	 */
-	public function fetchInventory(Player $player, Level $level): array {
-		$data = $this->getFromFormattedData($player, $level);
-		return $this->decompressInventoryContents($data[0]);
+	public function onAbortLoading(string $playername) : void {
+		unset($this->loading[$playername]);
+	}
+
+	public function onLoadInventory(Player $player, array $contents) : void {
+		unset($this->loading[$player->getLowerCaseName()]);
+		$level = $player->getLevel()->getFolderName();
+
+		if(isset($contents[$level])) {
+			$armorInventory = $player->getArmorInventory();
+			$inventory = $player->getInventory();
+
+			foreach($contents[$level] as $slot => $item) {
+				if($slot >= 100 && $slot < 104) {
+					$armorInventory->setItem($slot, $item, false);
+				}else{
+					$inventory->setItem($slot, $item, false);
+				}
+			}
+
+			$armorInventory->sendContents($player);
+			$inventory->sendContents($player);
+			unset($contents[$level]);
+		}
+
+		$this->loaded_inventories[$player->getLowerCaseName()] = $contents;
+	}
+
+	public function save($player, bool $unset = false) : void {
+		$key = $player instanceof Player ? $player->getLowerCaseName() : strtolower($player);
+		if(!empty($this->loaded_inventories[$key])) {
+			$tag = new CompoundTag();
+			foreach($this->loaded_inventories[$key] as $level_name => $contents) {
+				$inventory = new ListTag($level_name);
+				foreach($contents as $slot => $item){
+					$inventory->push($item->nbtSerialize($slot));
+				}
+				$tag->setTag($inventory);
+			}
+
+			$file_path = $this->base_directory . $key . ".dat";
+			$compressedFileContents = (new BigEndianNBTStream())->writeCompressed($tag);
+
+			$this->getServer()->getScheduler()->scheduleAsyncTask(new FileWriteTask($file_path, $compressedFileContents));
+		} elseif (file_exists($this->base_directory . $key . ".dat")) {
+			unlink($this->base_directory . $key . ".dat");
+		}
+
+		if($unset) {
+			unset($this->loaded_inventories[$key]);
+		}
+	}
+
+	public function saveAllInventories() : void {
+		foreach(array_keys($this->loaded_inventories) as $player) {
+			$this->save($player);
+		}
 	}
 }
