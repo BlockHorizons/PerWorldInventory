@@ -11,4 +11,8 @@ permissions:
   per-world-inventory.bypass:
     default: false
     description: Allows bypassing the per world inventory.
+
+commands:
+  pwi:
+    default: op
 ...

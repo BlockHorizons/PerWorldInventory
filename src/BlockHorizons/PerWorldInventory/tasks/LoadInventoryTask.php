@@ -32,9 +32,9 @@ class LoadInventoryTask extends AsyncTask {
 		$tag = (new BigEndianNBTStream())->readCompressed($raw_contents);
 		$result = [];
 
-		foreach($tag->getValue() as $level_name => $inventory_tag){
+		foreach($tag->getValue() as $level_name => $inventory_tag) {
 			$contents = [];
-			foreach($inventory_tag as $item_tag){
+			foreach($inventory_tag as $item_tag) {
 				$contents[$item_tag->getByte("Slot")] = Item::nbtDeserialize($item_tag);
 			}
 			$result[$level_name] = $contents;
@@ -47,7 +47,7 @@ class LoadInventoryTask extends AsyncTask {
 		$player = $server->getPlayerByRawUUID($this->playerRawUUID);
 		$plugin = $server->getPluginManager()->getPlugin("PerWorldInventory");
 
-		if($player === null){
+		if($player === null) {
 			$plugin->onAbortLoading($this->playername);
 			return;
 		}

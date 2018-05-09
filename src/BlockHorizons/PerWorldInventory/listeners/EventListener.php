@@ -45,7 +45,7 @@ class EventListener implements Listener {
 		$target = $event->getTarget();
 
 		$this->getPlugin()->storeInventory($player, $origin);
-		if($player->hasPermission("per-world-inventory.bypass")){
+		if($player->hasPermission("per-world-inventory.bypass")) {
 			return;
 		}
 
@@ -57,7 +57,20 @@ class EventListener implements Listener {
 			return;
 		}
 
-		$player->getInventory()->setContents($this->getPlugin()->getInventory($player, $target));
+		$contents = $this->getPlugin()->getInventory($player, $target);
+
+		$inventory = $player->getInventory();
+		$inventory->clearAll(false);
+
+		$armorInventory = $player->getArmorInventory();
+		$armorInventory->clearAll(false);
+
+		foreach($contents as $slot => $item) {
+			($slot >= 100 && $slot < 104 ? $armorInventory : $inventory)->setItem($slot, $item, false);
+		}
+
+		$inventory->sendContents($player);
+		$armorInventory->sendContents($player);
 	}
 
 	/**
@@ -87,7 +100,7 @@ class EventListener implements Listener {
 
 	public function onInventoryTransaction(InventoryTransactionEvent $event) : void {
 		$player = $event->getTransaction()->getSource();
-		if($this->getPlugin()->isLoading($player)){
+		if($this->getPlugin()->isLoading($player)) {
 			$event->setCancelled();
 		}
 	}

@@ -7,6 +7,9 @@ namespace BlockHorizons\PerWorldInventory;
 use BlockHorizons\PerWorldInventory\listeners\EventListener;
 use BlockHorizons\PerWorldInventory\tasks\LoadInventoryTask;
 
+use pocketmine\command\Command;
+use pocketmine\command\CommandSender;
+use pocketmine\item\Item;
 use pocketmine\level\Level;
 use pocketmine\nbt\BigEndianNBTStream;
 use pocketmine\nbt\tag\CompoundTag;
@@ -41,6 +44,29 @@ class PerWorldInventory extends PluginBase {
 		$this->saveAllInventories();
 	}
 
+	public function updateOldFiles() : \Generator {
+		$reader = new BigEndianNBTStream();
+
+		foreach(scandir($this->base_directory) as $file) {
+			if(substr($file, -4) === ".yml") {
+				$player = substr($file, 0, -4);
+				$contents = yaml_parse_file($this->base_directory . $file);
+
+				foreach($contents as $level => $b64inventory) {
+					$items = [];
+					foreach($reader->readCompressed(base64_decode($b64inventory))->getListTag("ItemList") as $item_tag) {
+						$items[] = Item::nbtDeserialize($item_tag);
+					}
+
+					$this->loaded_inventories[$player][$level] = $items;
+				}
+
+				$this->save($player, true);
+				yield $file;
+			}
+		}
+	}
+
 	public function getInventory(Player $player, Level $level) : array {
 		return $this->loaded_inventories[$player->getLowerCaseName()][$level->getFolderName()] ?? [];
 	}
@@ -56,7 +82,7 @@ class PerWorldInventory extends PluginBase {
 			}
 		}
 
-		if(empty($contents)){
+		if(empty($contents)) {
 			unset($this->loaded_inventories[$player->getLowerCaseName()][$level->getFolderName()]);
 		}else{
 			$this->loaded_inventories[$player->getLowerCaseName()][$level->getFolderName()] = $contents;
@@ -85,14 +111,13 @@ class PerWorldInventory extends PluginBase {
 
 		if(isset($contents[$level])) {
 			$armorInventory = $player->getArmorInventory();
+			$armorInventory->clearAll(false);
+
 			$inventory = $player->getInventory();
+			$inventory->clearAll(false);
 
 			foreach($contents[$level] as $slot => $item) {
-				if($slot >= 100 && $slot < 104) {
-					$armorInventory->setItem($slot, $item, false);
-				}else{
-					$inventory->setItem($slot, $item, false);
-				}
+				($slot >= 100 && $slot < 104 ? $armorInventory : $inventory)->setItem($slot, $item, false);
 			}
 
 			$armorInventory->sendContents($player);
@@ -109,7 +134,7 @@ class PerWorldInventory extends PluginBase {
 			$tag = new CompoundTag();
 			foreach($this->loaded_inventories[$key] as $level_name => $contents) {
 				$inventory = new ListTag($level_name);
-				foreach($contents as $slot => $item){
+				foreach($contents as $slot => $item) {
 					$inventory->push($item->nbtSerialize($slot));
 				}
 				$tag->setTag($inventory);
@@ -132,5 +157,25 @@ class PerWorldInventory extends PluginBase {
 		foreach(array_keys($this->loaded_inventories) as $player) {
 			$this->save($player);
 		}
+	}
+
+	public function onCommand(CommandSender $issuer, Command $cmd, $label, array $args) : bool {
+		if(isset($args[0])) {
+			switch($args[0]) {
+				case "updateoldfiles":
+					$issuer->sendMessage("Updating old files...");
+
+					$i = 0;
+					foreach($this->updateOldFiles() as $file) {
+						$issuer->sendMessage("Updated $file");
+						$i++;
+					}
+
+					$issuer->sendMessage("Update finished. Updated ($i) files.");
+					break;
+			}
+		}
+
+		return true;
 	}
 }
