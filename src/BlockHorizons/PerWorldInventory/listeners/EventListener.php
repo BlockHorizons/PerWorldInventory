@@ -50,11 +50,7 @@ class EventListener implements Listener {
 			return;
 		}
 
-		$config = $this->getPlugin()->getConfig();
-		$origin_name = $origin->getFolderName();
-		$target_name = $target->getFolderName();
-
-		if(in_array($target_name, $config->getNested("Bundled-Worlds." . $origin_name, [])) or in_array($origin_name, $config->getNested("Bundled-Worlds." . $target_name, []))) {
+		if($this->getPlugin()->getParentWorld($origin->getFolderName()) === $this->getPlugin()->getParentWorld($target->getFolderName())) {
 			return;
 		}
 

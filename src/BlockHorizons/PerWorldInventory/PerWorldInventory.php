@@ -29,6 +29,9 @@ class PerWorldInventory extends PluginBase {
 	/** @var bool[] */
 	private $loading = [];
 
+	/** @var string[] */
+	private $bundled_worlds = [];
+
 	public function onEnable() : void {
 		if(!is_dir($this->getDataFolder())) {
 			mkdir($this->getDataFolder());
@@ -36,12 +39,35 @@ class PerWorldInventory extends PluginBase {
 			mkdir($this->getDataFolder() . "inventories");
 		}
 
+		$this->parseBundledWorlds();
+
 		$this->base_directory = $this->getDataFolder() . "inventories/";
 		$this->getServer()->getPluginManager()->registerEvents(new EventListener($this), $this);
 	}
 
 	public function onDisable() : void {
 		$this->saveAllInventories();
+	}
+
+	private function parseBundledWorlds() : void {
+		foreach($this->getConfig()->get("Bundled-Worlds", []) as $main_world => $sub_worlds) {
+			$main_world = $this->getParentWorld($main_world);
+			foreach($sub_worlds as $child_world) {
+				$this->bundled_worlds[$child_world] = $main_world;
+			}
+		}
+	}
+
+	/**
+	 * Returns the parent world (foldername) of the
+	 * $world.
+	 *
+	 * @param string $world
+	 *
+	 * @return string
+	 */
+	public function getParentWorld(string $world) : string {
+		return $this->bundled_worlds[$world] ?? $world;
 	}
 
 	/**
@@ -78,7 +104,7 @@ class PerWorldInventory extends PluginBase {
 	 * @return array
 	 */
 	public function getInventory(Player $player, Level $level) : array {
-		return $this->loaded_inventories[$player->getLowerCaseName()][$level->getFolderName()] ?? [];
+		return $this->loaded_inventories[$player->getLowerCaseName()][$this->getParentWorld($level->getFolderName())] ?? [];
 	}
 
 	/**
@@ -101,9 +127,9 @@ class PerWorldInventory extends PluginBase {
 		}
 
 		if(empty($contents)) {
-			unset($this->loaded_inventories[$player->getLowerCaseName()][$level->getFolderName()]);
+			unset($this->loaded_inventories[$player->getLowerCaseName()][$this->getParentWorld($level->getFolderName())]);
 		}else{
-			$this->loaded_inventories[$player->getLowerCaseName()][$level->getFolderName()] = $contents;
+			$this->loaded_inventories[$player->getLowerCaseName()][$this->getParentWorld($level->getFolderName())] = $contents;
 		}
 	}
 

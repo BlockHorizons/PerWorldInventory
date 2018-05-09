@@ -2,6 +2,27 @@
 # Configuration file for PerWorldInventory by BlockHorizons
 
 # Worlds in which inventories should be bundled. This means, that MyWorld will have the same inventory as MySecondWorld.
+#
+# This may get tricky if you have circular dependencies, here's an example of what the plugin does in
+# case of circular dependencies.
+#
+# Example:
+# Bundled-Worlds:
+#   MainWorld:
+#     - world1
+#     - world2
+#   world2:
+#     - world3
+#     - world4
+#
+# The plugin will merge world2's worlds into MainWorld, it will look something like this:
+# Bundled-Worlds:
+#   MainWorld:
+#     - world1
+#     - world2
+#     - world3
+#     - world4
+#
 Bundled-Worlds:
   MyWorld:
     - MySecondWorld
