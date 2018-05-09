@@ -34,6 +34,7 @@ class EventListener implements Listener {
 	 * @param EntityLevelChangeEvent $event
 	 *
 	 * @priority HIGHEST
+	 * @ignoreCancelled true
 	 */
 	public function onLevelChange(EntityLevelChangeEvent $event) : void {
 		$player = $event->getEntity();
@@ -57,20 +58,7 @@ class EventListener implements Listener {
 			return;
 		}
 
-		$contents = $this->getPlugin()->getInventory($player, $target);
-
-		$inventory = $player->getInventory();
-		$inventory->clearAll(false);
-
-		$armorInventory = $player->getArmorInventory();
-		$armorInventory->clearAll(false);
-
-		foreach($contents as $slot => $item) {
-			($slot >= 100 && $slot < 104 ? $armorInventory : $inventory)->setItem($slot, $item, false);
-		}
-
-		$inventory->sendContents($player);
-		$armorInventory->sendContents($player);
+		$this->getPlugin()->setInventory($player, $target);
 	}
 
 	/**

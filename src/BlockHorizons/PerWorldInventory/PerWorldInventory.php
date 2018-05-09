@@ -44,6 +44,9 @@ class PerWorldInventory extends PluginBase {
 		$this->saveAllInventories();
 	}
 
+	/**
+	 * @return \Generator
+	 */
 	public function updateOldFiles() : \Generator {
 		$reader = new BigEndianNBTStream();
 
@@ -148,26 +151,39 @@ class PerWorldInventory extends PluginBase {
 	 * @param Item[][] $contents
 	 */
 	public function onLoadInventory(Player $player, array $contents) : void {
-		unset($this->loading[$player->getLowerCaseName()]);
-		$level = $player->getLevel()->getFolderName();
+		$key = $player->getLowerCaseName();
+		unset($this->loading[$key]);
+		$this->loaded_inventories[$key] = $contents;
 
-		if(isset($contents[$level])) {
-			$armorInventory = $player->getArmorInventory();
-			$armorInventory->clearAll(false);
+		$this->setInventory($player, $player->getLevel());
+	}
 
-			$inventory = $player->getInventory();
-			$inventory->clearAll(false);
+	/**
+	 * Sets player's inventory contents from the
+	 * cache.
+	 *
+ 	 * @param Player $player
+	 * @param Level $level
+	 */
+	public function setInventory(Player $player, Level $level) : void {
+		$contents = $this->getInventory($player, $level);
 
-			foreach($contents[$level] as $slot => $item) {
-				($slot >= 100 && $slot < 104 ? $armorInventory : $inventory)->setItem($slot, $item, false);
+		$inventory = $player->getInventory();
+		$inventory->clearAll(false);
+
+		$armorInventory = $player->getArmorInventory();
+		$armorInventory->clearAll(false);
+
+		foreach($contents as $slot => $item) {
+			if($slot >= 100 && $slot < 104) {
+				$armorInventory->setItem($slot - 100, $item, false);
+			} else {
+				$inventory->setItem($slot, $item, false);
 			}
-
-			$armorInventory->sendContents($player);
-			$inventory->sendContents($player);
-			unset($contents[$level]);
 		}
 
-		$this->loaded_inventories[$player->getLowerCaseName()] = $contents;
+		$inventory->sendContents($player);
+		$armorInventory->sendContents($player);
 	}
 
 	/**
