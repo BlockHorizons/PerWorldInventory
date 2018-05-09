@@ -67,10 +67,25 @@ class PerWorldInventory extends PluginBase {
 		}
 	}
 
+	/**
+	 * Returns player's cached inventory contents.
+	 *
+	 * @param Player $player
+	 *
+	 * @return array
+	 */
 	public function getInventory(Player $player, Level $level) : array {
 		return $this->loaded_inventories[$player->getLowerCaseName()][$level->getFolderName()] ?? [];
 	}
 
+	/**
+	 * Stores player's inventory contents to cache, the cache
+	 * will later be written to file when the player quits or
+	 * if the plugin disabled (generally during server shutdown).
+	 *
+	 * @param Player $player
+	 * @param Level $level
+	 */
 	public function storeInventory(Player $player, Level $level) : void {
 		$contents = $player->getInventory()->getContents();
 		$armorInventory = $player->getArmorInventory();
@@ -89,6 +104,13 @@ class PerWorldInventory extends PluginBase {
 		}
 	}
 
+	/**
+	 * Loads the player's inventory file asynchronously. Once
+	 * the file contents have been fetched asynchronously,
+	 * onLoadInventory() is called.
+	 *
+	 * @param Player $player
+	 */
 	public function load(Player $player) : void {
 		$filepath = $this->base_directory . $player->getLowerCaseName() . ".dat";
 		if(file_exists($filepath)) {
@@ -97,14 +119,34 @@ class PerWorldInventory extends PluginBase {
 		}
 	}
 
+	/**
+	 * @param Player $player
+	 *
+	 * @return bool whether the AsyncTask is still fetching contents.
+	 */
 	public function isLoading(Player $player) : bool {
 		return isset($this->loading[$player->getLowerCaseName()]);
 	}
 
+	/**
+	 * Called when the file contents have been fetched
+	 * asynchronously but the player has logged out by the
+	 * time the contents were fetched.
+	 *
+	 * @param string $playername
+	 */
 	public function onAbortLoading(string $playername) : void {
 		unset($this->loading[$playername]);
 	}
 
+	/**
+	 * Called when the file contents have been fetched
+	 * asynchronously and the Player hasn't quit during
+	 * the task.
+	 *
+	 * @param Player $player
+	 * @param Item[][] $contents
+	 */
 	public function onLoadInventory(Player $player, array $contents) : void {
 		unset($this->loading[$player->getLowerCaseName()]);
 		$level = $player->getLevel()->getFolderName();
@@ -128,6 +170,12 @@ class PerWorldInventory extends PluginBase {
 		$this->loaded_inventories[$player->getLowerCaseName()] = $contents;
 	}
 
+	/**
+	 * Writes player's cached inventory contents to file.
+	 *
+	 * @param Player|string $player
+	 * @param bool $unset whether to unset the cache
+	 */
 	public function save($player, bool $unset = false) : void {
 		$key = $player instanceof Player ? $player->getLowerCaseName() : strtolower($player);
 		if(!empty($this->loaded_inventories[$key])) {
@@ -153,13 +201,24 @@ class PerWorldInventory extends PluginBase {
 		}
 	}
 
+	/**
+	 * Writes all cached inventories to file.
+	 */
 	public function saveAllInventories() : void {
 		foreach(array_keys($this->loaded_inventories) as $player) {
 			$this->save($player);
 		}
 	}
 
-	public function onCommand(CommandSender $issuer, Command $cmd, $label, array $args) : bool {
+	/**
+	 * @param CommandSender $issuer
+	 * @param Command $cmd
+	 * @param string $label
+	 * @param array $args
+	 *
+	 * @return bool
+	 */
+	public function onCommand(CommandSender $issuer, Command $cmd, string $label, array $args) : bool {
 		if(isset($args[0])) {
 			switch($args[0]) {
 				case "updateoldfiles":

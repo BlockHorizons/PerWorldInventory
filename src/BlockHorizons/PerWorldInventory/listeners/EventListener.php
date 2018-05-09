@@ -98,9 +98,14 @@ class EventListener implements Listener {
 		$this->getPlugin()->load($player);
 	}
 
+	/**
+	 * @param InventoryTransactionEvent $event
+	 *
+	 * @priority HIGH
+	 * @ignoreCancelled true
+	 */
 	public function onInventoryTransaction(InventoryTransactionEvent $event) : void {
-		$player = $event->getTransaction()->getSource();
-		if($this->getPlugin()->isLoading($player)) {
+		if($this->getPlugin()->isLoading($event->getTransaction()->getSource())) {
 			$event->setCancelled();
 		}
 	}
