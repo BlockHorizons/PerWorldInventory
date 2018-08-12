@@ -143,7 +143,7 @@ class PerWorldInventory extends PluginBase {
 	public function load(Player $player) : void {
 		$filepath = $this->base_directory . $player->getLowerCaseName() . ".dat";
 		if(file_exists($filepath)) {
-			$this->getServer()->getScheduler()->scheduleAsyncTask(new LoadInventoryTask($player, $filepath));
+			$this->getServer()->getAsyncPool()->submitTask(new LoadInventoryTask($player, $filepath));
 			$this->loading[$player->getLowerCaseName()] = true;
 		}
 	}
@@ -233,7 +233,7 @@ class PerWorldInventory extends PluginBase {
 			$file_path = $this->base_directory . $key . ".dat";
 			$compressedFileContents = (new BigEndianNBTStream())->writeCompressed($tag);
 
-			$this->getServer()->getScheduler()->scheduleAsyncTask(new FileWriteTask($file_path, $compressedFileContents));
+			$this->getServer()->getAsyncPool()->submitTask(new FileWriteTask($file_path, $compressedFileContents));
 		} elseif (file_exists($this->base_directory . $key . ".dat")) {
 			unlink($this->base_directory . $key . ".dat");
 		}
