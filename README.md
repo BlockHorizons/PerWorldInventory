@@ -1,4 +1,4 @@
-# PerWorldInventory
+# PerWorldInventory 3.X.X Full Working
 A full featured per world inventory plugin.
 
 This plugin allows you to share the inventories of multiple worlds by configuring it in the `config.yml` file. You can stop players from switching inventories per world by giving them the permission: `per-world-inventory.bypass`.
