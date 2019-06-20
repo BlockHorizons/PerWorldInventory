@@ -33,9 +33,8 @@ class PerWorldInventory extends PluginBase {
 	private $bundled_worlds = [];
 
 	public function onEnable() : void {
-		if(!is_dir($this->getDataFolder())) {
-			mkdir($this->getDataFolder());
-			$this->saveDefaultConfig();
+		$this->saveDefaultConfig();
+		if(!is_dir($this->getDataFolder() . "inventories")) {
 			mkdir($this->getDataFolder() . "inventories");
 		}
 
