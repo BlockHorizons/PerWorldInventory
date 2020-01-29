@@ -58,15 +58,15 @@ final class WorldInstance{
 		}
 	}
 
-	public function onPlayerExit(Player $player, ?WorldInstance $to_world = null) : void{
+	public function onPlayerExit(Player $player, ?WorldInstance $to_world = null, bool $quit = false) : void{
 		if($to_world === null || !self::haveSameBundles($this, $to_world)){
-			$this->save($player);
+			$this->save($player, false, $quit);
 		}
 	}
 
-	public function save(Player $player, bool $force = false) : void{
+	public function save(Player $player, bool $force = false, bool $quit = false) : void{
 		if($force || !$player->hasPermission("per-world-inventory.bypass")){
-			$this->database->save($this, $player);
+			$this->database->save($this, $player, $quit);
 		}
 	}
 }

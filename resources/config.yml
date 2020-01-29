@@ -24,7 +24,7 @@ Bundled-Worlds:
 
 # Database config
 database:
-  # The database type. "sqlite" and "mysql" are supported.
+  # The database type. "sqlite", "mysql" and "memory" are supported.
   type: sqlite
 
   # Edit these settings only if you choose "sqlite".
@@ -39,6 +39,11 @@ database:
     username: root
     password: ""
     schema: your_schema
+  memory:
+    # Whether to delete inventories when player leaves the server.
+    # Warning: If this is set to false, the inventories will stay
+    # in memory until the server shuts down.
+    delete-on-quit: true
   # The maximum number of simultaneous SQL queries
   # Recommended: 1 for sqlite, 2 for MySQL. You may want to further increase this value if your MySQL connection is very slow.
   worker-limit: 1

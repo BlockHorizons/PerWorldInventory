@@ -62,7 +62,7 @@ final class WorldListener implements Listener{
 	 */
 	public function onPlayerQuit(PlayerQuitEvent $event) : void{
 		$player = $event->getPlayer();
-		$this->manager->get($player->getLevel())->onPlayerExit($player);
+		$this->manager->get($player->getLevel())->onPlayerExit($player, null, true);
 	}
 
 	/**

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace BlockHorizons\PerWorldInventory\world\database;
 
-final class MySQLWorldDatabase extends WorldDatabase{
+final class MySQLWorldDatabase extends LibasynqlWorldDatabase{
 
 	protected function fetchBinaryString(string $string) : string{
 		return $string;

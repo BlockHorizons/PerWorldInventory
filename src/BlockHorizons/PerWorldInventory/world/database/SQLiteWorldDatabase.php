@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace BlockHorizons\PerWorldInventory\world\database;
 
-final class SQLiteWorldDatabase extends WorldDatabase{
+final class SQLiteWorldDatabase extends LibasynqlWorldDatabase{
 
 	protected function fetchBinaryString(string $string) : string{
 		return hex2bin($string);
