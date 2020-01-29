@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace BlockHorizons\PerWorldInventory\world;
 
@@ -47,7 +47,7 @@ final class WorldInstance{
 			if($from_world === null || !self::haveSameBundles($this, $from_world)){
 				$instance = $this->player_manager->get($player);
 				$instance->wait($this);
-				$this->database->load($this, $player, function(array $armor, array $inventory) use($player, $instance) : void{
+				$this->database->load($this, $player, function(array $armor, array $inventory) use ($player, $instance) : void{
 					if($player->isOnline()){
 						$player->getArmorInventory()->setContents($armor);
 						$player->getInventory()->setContents($inventory);

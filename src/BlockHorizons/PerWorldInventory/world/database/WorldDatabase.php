@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace BlockHorizons\PerWorldInventory\world\database;
 
@@ -17,10 +17,7 @@ abstract class WorldDatabase{
 	private $database;
 
 	public function __construct(PerWorldInventory $plugin){
-		$this->database = libasynql::create($plugin, $plugin->getConfig()->get("database"), [
-			"sqlite" => "db/sqlite.sql",
-			"mysql" => "db/mysql.sql"
-		]);
+		$this->database = libasynql::create($plugin, $plugin->getConfig()->get("database"), ["sqlite" => "db/sqlite.sql", "mysql" => "db/mysql.sql"]);
 
 		$this->database->executeGeneric(WorldDatabaseStmts::INIT_UNBUNDLED_INVENTORIES);
 		$this->database->executeGeneric(WorldDatabaseStmts::INIT_BUNDLED_INVENTORIES);
@@ -36,9 +33,7 @@ abstract class WorldDatabase{
 	 * @phpstan-param Closure(array<int, Item> $armor, array<int, Item> $inventory) : void $onLoad
 	 */
 	public function load(WorldInstance $world, Player $player, Closure $onLoad) : void{
-		$params = [
-			"player" => strtolower($player->getName())
-		];
+		$params = ["player" => strtolower($player->getName())];
 
 		$bundle = $world->getBundle();
 		if($bundle !== null){
@@ -49,13 +44,10 @@ abstract class WorldDatabase{
 			$params["world"] = $world->getName();
 		}
 
-		$this->database->executeSelect($stmt, $params, function(array $rows) use($onLoad) : void{
+		$this->database->executeSelect($stmt, $params, function(array $rows) use ($onLoad) : void{
 			if(isset($rows[0])){
 				["armor_inventory" => $armor, "inventory" => $inventory] = $rows[0];
-				$onLoad(
-					WorldDatabaseUtils::unserializeInventoryContents($this->fetchBinaryString($armor)),
-					WorldDatabaseUtils::unserializeInventoryContents($this->fetchBinaryString($inventory))
-				);
+				$onLoad(WorldDatabaseUtils::unserializeInventoryContents($this->fetchBinaryString($armor)), WorldDatabaseUtils::unserializeInventoryContents($this->fetchBinaryString($inventory)));
 			}else{
 				$onLoad([], []);
 			}
@@ -69,11 +61,7 @@ abstract class WorldDatabase{
 	 * @param Player $player
 	 */
 	public function save(WorldInstance $world, Player $player) : void{
-		$params = [
-			"player" => strtolower($player->getName()),
-			"armor_inventory" => $this->saveBinaryString(WorldDatabaseUtils::serializeInventoryContents($player->getArmorInventory()->getContents())),
-			"inventory" => $this->saveBinaryString(WorldDatabaseUtils::serializeInventoryContents($player->getInventory()->getContents()))
-		];
+		$params = ["player" => strtolower($player->getName()), "armor_inventory" => $this->saveBinaryString(WorldDatabaseUtils::serializeInventoryContents($player->getArmorInventory()->getContents())), "inventory" => $this->saveBinaryString(WorldDatabaseUtils::serializeInventoryContents($player->getInventory()->getContents()))];
 
 		$bundle = $world->getBundle();
 		if($bundle !== null){
@@ -88,6 +76,7 @@ abstract class WorldDatabase{
 	}
 
 	abstract protected function fetchBinaryString(string $string) : string;
+
 	abstract protected function saveBinaryString(string $string) : string;
 
 	public function close() : void{

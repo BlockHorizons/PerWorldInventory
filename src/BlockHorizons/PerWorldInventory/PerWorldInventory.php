@@ -26,16 +26,16 @@ final class PerWorldInventory extends PluginBase{
 	}
 
 	/**
-	 * @internal
 	 * @return PlayerManager
+	 * @internal
 	 */
 	public function getPlayerManager() : PlayerManager{
 		return $this->player_manager;
 	}
 
 	/**
-	 * @internal
 	 * @return WorldManager
+	 * @internal
 	 */
 	public function getWorldManager() : WorldManager{
 		return $this->world_manager;

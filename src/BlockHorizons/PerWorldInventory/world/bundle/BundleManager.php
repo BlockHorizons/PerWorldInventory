@@ -1,10 +1,10 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace BlockHorizons\PerWorldInventory\world\bundle;
 
-final class BundleManager {
+final class BundleManager{
 
 	/** @var Bundle[] */
 	private $bundles = [];
@@ -25,7 +25,7 @@ final class BundleManager {
 		}
 	}
 
-	public function createBundle(string $name) : void {
+	public function createBundle(string $name) : void{
 		if(isset($this->bundles[$name])){
 			throw new \InvalidArgumentException("Bundle " . $name . " already exists.");
 		}
@@ -33,7 +33,7 @@ final class BundleManager {
 		$this->bundles[$name] = new Bundle();
 	}
 
-	public function addToBundle(string $bundle, string $world) : void {
+	public function addToBundle(string $bundle, string $world) : void{
 		if(isset($this->bundled_worlds[$world])){
 			throw new \InvalidArgumentException("World " . $world . " is already bundled in bundle " . $this->bundled_worlds[$world]);
 		}
@@ -45,7 +45,7 @@ final class BundleManager {
 		$this->bundled_worlds[$world] = $bundle;
 	}
 
-	public function getBundle(string $world) : ?string {
+	public function getBundle(string $world) : ?string{
 		return $this->bundled_worlds[$world] ?? null;
 	}
 }
