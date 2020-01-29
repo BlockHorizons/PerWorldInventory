@@ -2,11 +2,9 @@
 
 declare(strict_types=1);
 
-namespace BlockHorizons\PerWorldInventory\world\database\memory;
+namespace BlockHorizons\PerWorldInventory\world\database;
 
 use BlockHorizons\PerWorldInventory\PerWorldInventory;
-use BlockHorizons\PerWorldInventory\world\database\WorldDatabase;
-use BlockHorizons\PerWorldInventory\world\database\WorldDatabaseUtils;
 use BlockHorizons\PerWorldInventory\world\WorldInstance;
 use Closure;
 use pocketmine\Player;

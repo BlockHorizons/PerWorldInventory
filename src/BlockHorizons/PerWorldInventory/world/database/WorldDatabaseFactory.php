@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace BlockHorizons\PerWorldInventory\world\database;
 
 use BlockHorizons\PerWorldInventory\PerWorldInventory;
-use BlockHorizons\PerWorldInventory\world\database\memory\MemoryWorldDatabase;
 use InvalidArgumentException;
 
 final class WorldDatabaseFactory{
