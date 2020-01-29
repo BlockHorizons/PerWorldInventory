@@ -1,29 +1,45 @@
 ---
 # Configuration file for PerWorldInventory by BlockHorizons
 
-# Worlds in which inventories should be bundled. This means, that MyWorld will have the same inventory as MySecondWorld.
+# Worlds in which inventories should be bundled.
 #
-# This may get tricky if you have circular dependencies, here's an example of what the plugin does in
-# case of circular dependencies.
+# The example below bundles hub1, hub2 and hub3 into one category
+# labelled "hubs". Players will share the same inventory in all
+# three worlds (hub1, hub2, hub3).
 #
-# Example:
 # Bundled-Worlds:
-#   MainWorld:
-#     - world1
-#     - world2
-#   world2:
-#     - world3
-#     - world4
+#   hubs:
+#     - hub1
+#     - hub2
+#     - hub3
 #
-# The plugin will merge world2's worlds into MainWorld, it will look something like this:
-# Bundled-Worlds:
-#   MainWorld:
-#     - world1
-#     - world2
-#     - world3
-#     - world4
+# If you don't want to bundle any worlds, set the value to an empty
+# array like so:
+# Bundled-Worlds: []
 #
 Bundled-Worlds:
-  MyWorld:
-    - MySecondWorld
+  PlotWorlds:
+    - plot1
+    - plot2
+
+# Database config
+database:
+  # The database type. "sqlite" and "mysql" are supported.
+  type: sqlite
+
+  # Edit these settings only if you choose "sqlite".
+  sqlite:
+    # The file name of the database in the plugin data folder.
+    # You can also put an absolute path here.
+    file: data.sqlite
+  # Edit these settings only if you choose "mysql".
+  mysql:
+    host: 127.0.0.1
+    # Avoid using the "root" user for security reasons.
+    username: root
+    password: ""
+    schema: your_schema
+  # The maximum number of simultaneous SQL queries
+  # Recommended: 1 for sqlite, 2 for MySQL. You may want to further increase this value if your MySQL connection is very slow.
+  worker-limit: 1
 ...
