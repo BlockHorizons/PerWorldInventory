@@ -1,4 +1,6 @@
 # PerWorldInventory
+[![Chat](https://img.shields.io/badge/chat-on%20discord-7289da.svg)](https://discord.gg/YynM57V)  
+
 A full featured per world inventory plugin.
 
 This plugin allows you to share the inventories of multiple worlds by configuring it in the `config.yml` file. You can stop players from switching inventories per world by giving them the permission: `per-world-inventory.bypass`.
