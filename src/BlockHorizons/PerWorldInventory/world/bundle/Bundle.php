@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace BlockHorizons\PerWorldInventory\world\bundle;
 
-use Ds\Set;
+use Ramsey\Collection\Set;
 
 final class Bundle{
 
@@ -12,7 +12,7 @@ final class Bundle{
 	private $worlds;
 
 	public function __construct(){
-		$this->worlds = new Set();
+		$this->worlds = new Set("string");
 	}
 
 	public function add(string $world) : void{

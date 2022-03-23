@@ -7,14 +7,13 @@ namespace BlockHorizons\PerWorldInventory\world\database;
 use BlockHorizons\PerWorldInventory\PerWorldInventory;
 use BlockHorizons\PerWorldInventory\world\WorldInstance;
 use Closure;
-use pocketmine\Player;
+use pocketmine\player\Player;
 use poggit\libasynql\DataConnector;
 use poggit\libasynql\libasynql;
 
 abstract class LibasynqlWorldDatabase implements WorldDatabase{
 
-	/** @var DataConnector */
-	private $database;
+	private DataConnector $database;
 
 	public function __construct(PerWorldInventory $plugin){
 		$this->database = libasynql::create($plugin, $plugin->getConfig()->get("database"), ["sqlite" => "db/sqlite.sql", "mysql" => "db/mysql.sql"]);

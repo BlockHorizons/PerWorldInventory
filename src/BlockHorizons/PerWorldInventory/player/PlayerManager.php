@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace BlockHorizons\PerWorldInventory\player;
 
 use BlockHorizons\PerWorldInventory\PerWorldInventory;
-use pocketmine\Player;
+use pocketmine\player\Player;
 
 final class PlayerManager{
 
 	/** @var PlayerInstance[] */
-	private $players = [];
+	private array $players = [];
 
 	public function __construct(PerWorldInventory $plugin){
 		$plugin->getServer()->getPluginManager()->registerEvents(new PlayerListener($this), $plugin);

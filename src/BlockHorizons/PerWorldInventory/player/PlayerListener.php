@@ -9,25 +9,25 @@ use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\Cancellable;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
+use pocketmine\event\Event;
 use pocketmine\event\inventory\InventoryTransactionEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\player\PlayerQuitEvent;
-use pocketmine\Player;
+use pocketmine\player\Player;
 
 final class PlayerListener implements Listener{
 
-	/** @var PlayerManager */
-	private $manager;
+	private PlayerManager $manager;
 
 	public function __construct(PlayerManager $manager){
 		$this->manager = $manager;
 	}
 
-	private function cancelIfWaiting(Player $player, Cancellable $event) : bool{
+	private function cancelIfWaiting(Player $player, Event $event) : bool{
 		if($this->manager->get($player)->isWaiting()){
-			$event->setCancelled();
+			$event->cancel();
 			return true;
 		}
 

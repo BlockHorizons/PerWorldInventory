@@ -6,7 +6,7 @@ namespace BlockHorizons\PerWorldInventory\world\database;
 
 use BlockHorizons\PerWorldInventory\world\WorldInstance;
 use Closure;
-use pocketmine\Player;
+use pocketmine\player\Player;
 
 interface WorldDatabase{
 

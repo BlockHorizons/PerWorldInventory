@@ -9,7 +9,7 @@ use BlockHorizons\PerWorldInventory\world\WorldInstance;
 final class PlayerInstance{
 
 	/** @var int[] */
-	private $waiting = [];
+	private array $waiting = [];
 
 	public function wait(WorldInstance $instance) : void{
 		$this->waiting[spl_object_id($instance)] = time();

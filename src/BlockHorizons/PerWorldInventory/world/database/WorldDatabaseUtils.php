@@ -5,18 +5,20 @@ declare(strict_types=1);
 namespace BlockHorizons\PerWorldInventory\world\database;
 
 use pocketmine\item\Item;
-use pocketmine\nbt\BigEndianNBTStream;
+use pocketmine\nbt\BigEndianNbtSerializer;
 use pocketmine\nbt\NBT;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\ListTag;
+use pocketmine\nbt\TreeRoot;
+use function zlib_encode;
 
 final class WorldDatabaseUtils{
 
 	private const TAG_CONTENTS = "Contents";
 
-	private static function getSerializer() : BigEndianNBTStream{
+	private static function getSerializer() : BigEndianNbtSerializer{
 		static $serializer = null;
-		return $serializer ?? $serializer = new BigEndianNBTStream();
+		return $serializer ?? $serializer = new BigEndianNbtSerializer();
 	}
 
 	/**
@@ -26,17 +28,18 @@ final class WorldDatabaseUtils{
 	 * @return string
 	 */
 	public static function serializeInventoryContents(array $contents) : string{
-		$tag = new ListTag(self::TAG_CONTENTS, [], NBT::TAG_Compound);
+		$items = [];
 		/**
 		 * @var int $slot
 		 * @var Item $item
 		 */
 		foreach($contents as $slot => $item){
-			$tag->push($item->nbtSerialize($slot));
+			$items[] = $item->nbtSerialize($slot);
 		}
-		$nbt = new CompoundTag();
-		$nbt->setTag($tag);
-		return self::getSerializer()->writeCompressed($nbt);
+		$nbt = CompoundTag::create()
+            ->setTag(self::TAG_CONTENTS, new ListTag($items, NBT::TAG_Compound));
+
+		return zlib_encode(self::getSerializer()->write(new TreeRoot($nbt)), ZLIB_ENCODING_GZIP);
 	}
 
 	/**
@@ -47,13 +50,11 @@ final class WorldDatabaseUtils{
 	 * @return array<int, Item>
 	 */
 	public static function unserializeInventoryContents(string $serialized) : array{
-		$nbt = self::getSerializer()->readCompressed($serialized);
-		assert($nbt instanceof CompoundTag);
-
+        $nbt = self::getSerializer()->read(zlib_decode($serialized))->mustGetCompoundTag()->getListTag(self::TAG_CONTENTS);
 		$contents = [];
 
 		/** @var CompoundTag $entry */
-		foreach($nbt->getListTag(self::TAG_CONTENTS) as $entry){
+		foreach($nbt as $entry){
 			$contents[$entry->getByte("Slot")] = Item::nbtDeserialize($entry);
 		}
 

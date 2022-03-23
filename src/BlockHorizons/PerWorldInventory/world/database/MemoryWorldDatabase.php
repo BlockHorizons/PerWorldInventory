@@ -7,16 +7,14 @@ namespace BlockHorizons\PerWorldInventory\world\database;
 use BlockHorizons\PerWorldInventory\PerWorldInventory;
 use BlockHorizons\PerWorldInventory\world\WorldInstance;
 use Closure;
-use pocketmine\Player;
+use pocketmine\player\Player;
 use SQLite3;
 
 final class MemoryWorldDatabase implements WorldDatabase{
 
-	/** @var bool */
-	private $delete_on_quit;
+	private bool $delete_on_quit;
 
-	/** @var SQLite3 */
-	private $database;
+	private SQLite3 $database;
 
 	public function __construct(PerWorldInventory $plugin){
 		$this->delete_on_quit = $plugin->getConfig()->getNested("database.memory.delete-on-quit");

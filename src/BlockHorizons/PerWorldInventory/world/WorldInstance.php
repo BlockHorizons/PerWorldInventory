@@ -1,13 +1,12 @@
 <?php
-
 declare(strict_types=1);
 
 namespace BlockHorizons\PerWorldInventory\world;
 
 use BlockHorizons\PerWorldInventory\player\PlayerManager;
 use BlockHorizons\PerWorldInventory\world\database\WorldDatabase;
-use pocketmine\level\Level;
-use pocketmine\Player;
+use pocketmine\world\World;
+use pocketmine\player\Player;
 
 final class WorldInstance{
 
@@ -15,19 +14,15 @@ final class WorldInstance{
 		return $a->bundle !== null && $b->bundle !== null && $a->bundle === $b->bundle;
 	}
 
-	/** @var string */
-	private $name;
+	private string $name;
 
-	/** @var WorldDatabase */
-	private $database;
+	private WorldDatabase $database;
 
-	/** @var PlayerManager */
-	private $player_manager;
+	private PlayerManager $player_manager;
 
-	/** @var string|null */
-	private $bundle;
+	private ?string $bundle;
 
-	public function __construct(Level $level, WorldDatabase $database, PlayerManager $player_manager, ?string $bundle){
+	public function __construct(World $level, WorldDatabase $database, PlayerManager $player_manager, ?string $bundle){
 		$this->name = $level->getFolderName();
 		$this->database = $database;
 		$this->player_manager = $player_manager;
