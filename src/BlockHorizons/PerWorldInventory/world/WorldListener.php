@@ -65,7 +65,7 @@ final class WorldListener implements Listener{
 
 	/**
 	 * @param EntityTeleportEvent $event
-	 * @priority MONITOR
+	 * @priority HIGHEST
 	 * @ignoreCancelled true
 	 */
 	public function onEntityTeleport(EntityTeleportEvent $event) : void{
