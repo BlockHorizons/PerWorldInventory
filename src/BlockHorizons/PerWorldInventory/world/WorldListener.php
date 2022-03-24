@@ -44,7 +44,7 @@ final class WorldListener implements Listener{
 
 	/**
 	 * @param PlayerJoinEvent $event
-	 * @priority MONITOR
+	 * @priority HIGHEST
 	 */
 	public function onPlayerJoin(PlayerJoinEvent $event) : void{
 		$player = $event->getPlayer();

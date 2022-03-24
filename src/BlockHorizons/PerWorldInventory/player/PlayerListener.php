@@ -36,7 +36,7 @@ final class PlayerListener implements Listener{
 
 	/**
 	 * @param PlayerJoinEvent $event
-	 * @priority LOWEST
+	 * @priority MONITOR
 	 */
 	public function onPlayerJoin(PlayerJoinEvent $event) : void{
 		$this->manager->onPlayerJoin($event->getPlayer());
