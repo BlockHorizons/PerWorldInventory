@@ -9,7 +9,7 @@ use BlockHorizons\PerWorldInventory\player\PlayerManager;
 use BlockHorizons\PerWorldInventory\world\bundle\BundleManager;
 use BlockHorizons\PerWorldInventory\world\database\WorldDatabase;
 use BlockHorizons\PerWorldInventory\world\database\WorldDatabaseFactory;
-use pocketmine\level\Level;
+use pocketmine\world\World;
 use pocketmine\Server;
 
 final class WorldManager{
@@ -34,7 +34,7 @@ final class WorldManager{
 	}
 
 	public function close() : void{
-		foreach(Server::getInstance()->getLevels() as $world){
+		foreach(Server::getInstance()->getWorldManager()->getWorlds() as $world){
 			$instance = $this->get($world);
 			foreach($world->getPlayers() as $player){
 				$instance->save($player);
@@ -44,15 +44,15 @@ final class WorldManager{
 		$this->database->close();
 	}
 
-	public function onWorldLoad(Level $world) : void{
+	public function onWorldLoad(World $world) : void{
 		$this->worlds[$world->getId()] = new WorldInstance($world, $this->database, $this->player_manager, $this->bundle->getBundle($world->getFolderName()));
 	}
 
-	public function onWorldUnload(Level $world) : void{
+	public function onWorldUnload(World $world) : void{
 		unset($this->worlds[$world->getId()]);
 	}
 
-	public function get(Level $world) : WorldInstance{
+	public function get(World $world) : WorldInstance{
 		return $this->worlds[$world->getId()];
 	}
 }

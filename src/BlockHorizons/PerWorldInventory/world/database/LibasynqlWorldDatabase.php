@@ -7,7 +7,7 @@ namespace BlockHorizons\PerWorldInventory\world\database;
 use BlockHorizons\PerWorldInventory\PerWorldInventory;
 use BlockHorizons\PerWorldInventory\world\WorldInstance;
 use Closure;
-use pocketmine\Player;
+use pocketmine\player\Player;
 use poggit\libasynql\DataConnector;
 use poggit\libasynql\libasynql;
 

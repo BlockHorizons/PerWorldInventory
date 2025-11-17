@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace BlockHorizons\PerWorldInventory\world;
 
 use pocketmine\event\entity\EntityTeleportEvent;
-use pocketmine\event\level\LevelLoadEvent;
-use pocketmine\event\level\LevelUnloadEvent;
+use pocketmine\event\world\WorldLoadEvent;
+use pocketmine\event\world\WorldUnloadEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\player\PlayerQuitEvent;
-use pocketmine\Player;
+use pocketmine\player\Player;
 use pocketmine\Server;
 
 final class WorldListener implements Listener{
@@ -21,27 +21,27 @@ final class WorldListener implements Listener{
 	public function __construct(WorldManager $manager){
 		$this->manager = $manager;
 
-		foreach(Server::getInstance()->getLevels() as $level){
-			$this->manager->onWorldLoad($level);
+		foreach(Server::getInstance()->getWorldManager()->getWorlds() as $world){
+			$this->manager->onWorldLoad($world);
 		}
 	}
 
 	/**
-	 * @param LevelLoadEvent $event
+	 * @param WorldLoadEvent $event
 	 * @priority MONITOR
 	 * @ignoreCancelled true
 	 */
-	public function onWorldLoad(LevelLoadEvent $event) : void{
-		$this->manager->onWorldLoad($event->getLevel());
+	public function onWorldLoad(WorldLoadEvent $event) : void{
+		$this->manager->onWorldLoad($event->getWorld());
 	}
 
 	/**
-	 * @param LevelUnloadEvent $event
+	 * @param WorldUnloadEvent $event
 	 * @priority MONITOR
 	 * @ignoreCancelled true
 	 */
-	public function onWorldUnload(LevelUnloadEvent $event) : void{
-		$this->manager->onWorldUnload($event->getLevel());
+	public function onWorldUnload(WorldUnloadEvent $event) : void{
+		$this->manager->onWorldUnload($event->getWorld());
 	}
 
 	/**
@@ -50,7 +50,7 @@ final class WorldListener implements Listener{
 	 */
 	public function onPlayerJoin(PlayerJoinEvent $event) : void{
 		$player = $event->getPlayer();
-		$this->manager->get($player->getLevel())->onPlayerEnter($player);
+		$this->manager->get($player->getWorld())->onPlayerEnter($player);
 	}
 
 	/**
@@ -62,7 +62,7 @@ final class WorldListener implements Listener{
 	 */
 	public function onPlayerQuit(PlayerQuitEvent $event) : void{
 		$player = $event->getPlayer();
-		$this->manager->get($player->getLevel())->onPlayerExit($player, null, true);
+		$this->manager->get($player->getWorld())->onPlayerExit($player, null, true);
 	}
 
 	/**
@@ -72,9 +72,11 @@ final class WorldListener implements Listener{
 	 */
 	public function onEntityTeleport(EntityTeleportEvent $event) : void{
 		$player = $event->getEntity();
+
 		if($player instanceof Player){
-			$from = $event->getFrom()->getLevel();
-			$to = $event->getTo()->getLevel();
+			$from = $event->getFrom()->getWorld();
+			$to = $event->getTo()->getWorld();
+
 			if($from !== $to){
 				$from_instance = $from !== null ? $this->manager->get($from) : null;
 				$to_instance = $to !== null ? $this->manager->get($to) : null;

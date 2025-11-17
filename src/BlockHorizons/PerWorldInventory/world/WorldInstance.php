@@ -6,8 +6,8 @@ namespace BlockHorizons\PerWorldInventory\world;
 
 use BlockHorizons\PerWorldInventory\player\PlayerManager;
 use BlockHorizons\PerWorldInventory\world\database\WorldDatabase;
-use pocketmine\level\Level;
-use pocketmine\Player;
+use pocketmine\world\World;
+use pocketmine\player\Player;
 
 final class WorldInstance{
 
@@ -27,8 +27,8 @@ final class WorldInstance{
 	/** @var string|null */
 	private $bundle;
 
-	public function __construct(Level $level, WorldDatabase $database, PlayerManager $player_manager, ?string $bundle){
-		$this->name = $level->getFolderName();
+	public function __construct(World $world, WorldDatabase $database, PlayerManager $player_manager, ?string $bundle){
+		$this->name = $world->getFolderName();
 		$this->database = $database;
 		$this->player_manager = $player_manager;
 		$this->bundle = $bundle;

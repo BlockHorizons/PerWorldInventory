@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace BlockHorizons\PerWorldInventory\world\database;
 
 use pocketmine\item\Item;
-use pocketmine\nbt\BigEndianNBTStream;
-use pocketmine\nbt\NBT;
+use pocketmine\nbt\BigEndianNbtSerializer;
+use pocketmine\nbt\TreeRoot;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\ListTag;
 
@@ -14,9 +14,9 @@ final class WorldDatabaseUtils{
 
 	private const TAG_CONTENTS = "Contents";
 
-	private static function getSerializer() : BigEndianNBTStream{
+	private static function getSerializer() : BigEndianNbtSerializer{
 		static $serializer = null;
-		return $serializer ?? $serializer = new BigEndianNBTStream();
+		return $serializer ?? $serializer = new BigEndianNbtSerializer();
 	}
 
 	/**
@@ -26,17 +26,17 @@ final class WorldDatabaseUtils{
 	 * @return string
 	 */
 	public static function serializeInventoryContents(array $contents) : string{
-		$tag = new ListTag(self::TAG_CONTENTS, [], NBT::TAG_Compound);
-		/**
-		 * @var int $slot
-		 * @var Item $item
-		 */
-		foreach($contents as $slot => $item){
-			$tag->push($item->nbtSerialize($slot));
-		}
-		$nbt = new CompoundTag();
-		$nbt->setTag($tag);
-		return self::getSerializer()->writeCompressed($nbt);
+		$list = new ListTag(); 
+
+        foreach($contents as $slot => $item){
+            $entry = $item->nbtSerialize();
+            $entry->setByte("Slot", $slot);
+
+            $list->push($entry);
+        }
+        $nbt = CompoundTag::create()->setTag(self::TAG_CONTENTS, $list);
+
+        return self::getSerializer()->write(new TreeRoot($nbt));
 	}
 
 	/**
@@ -47,16 +47,20 @@ final class WorldDatabaseUtils{
 	 * @return array<int, Item>
 	 */
 	public static function unserializeInventoryContents(string $serialized) : array{
-		$nbt = self::getSerializer()->readCompressed($serialized);
-		assert($nbt instanceof CompoundTag);
+        /** @var CompoundTag $root */
+        $root = self::getSerializer()->read($serialized)->getTag();
+        $contents = [];
+        $list = $root->getListTag(self::TAG_CONTENTS);
 
-		$contents = [];
-
-		/** @var CompoundTag $entry */
-		foreach($nbt->getListTag(self::TAG_CONTENTS) as $entry){
-			$contents[$entry->getByte("Slot")] = Item::nbtDeserialize($entry);
-		}
-
-		return $contents;
-	}
+        if($list !== null){
+            foreach($list as $entry){
+                if(!$entry instanceof CompoundTag){
+                    continue;
+                }
+                $slot = $entry->getByte("Slot");
+                $contents[$slot] = Item::nbtDeserialize($entry);
+            }
+        }
+        return $contents;
+    }
 }

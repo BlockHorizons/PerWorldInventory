@@ -4,26 +4,20 @@ declare(strict_types=1);
 
 namespace BlockHorizons\PerWorldInventory\world\bundle;
 
-use Ds\Set;
-
 final class Bundle{
 
-	/** @var Set<string> */
-	private $worlds;
-
-	public function __construct(){
-		$this->worlds = new Set();
-	}
+	/** @var array<string, bool> */
+	private array $worlds = [];
 
 	public function add(string $world) : void{
-		$this->worlds->add($world);
+		$this->worlds[$world] = true;
 	}
 
 	public function remove(string $world) : void{
-		$this->worlds->remove($world);
+		unset($this->world[$world]);
 	}
 
 	public function contains(string $world) : bool{
-		return $this->worlds->contains($world);
+		return isset($this->worlds[$world]);
 	}
 }

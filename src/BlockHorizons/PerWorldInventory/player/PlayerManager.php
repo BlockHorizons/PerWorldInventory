@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace BlockHorizons\PerWorldInventory\player;
 
 use BlockHorizons\PerWorldInventory\PerWorldInventory;
-use pocketmine\Player;
+use pocketmine\player\Player;
 
 final class PlayerManager{
 
